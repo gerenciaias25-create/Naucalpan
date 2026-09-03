@@ -1,0 +1,755 @@
+<!-- =========================================================
+  EMOCIONES DASHBOARD TEMPLATE v2.0
+  Sistema de Humor Social Emocional — Plutchik Framework
+  ========================================================= -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EMOCIONES — Naucalpan de Juárez</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#ffffff;--bg-card:#d5d1d1;--bg-card2:#d5d1d1;--bg-hdr:#1C2738;
+  --brd:#bcbcbc;--brd2:#bcbcbc;
+  --tx1:#1e293b;--tx2:#334155;--tx3:#475569;
+  --blue:#3b82f6;--blue2:#60a5fa;
+  --red:#ef4444;--red-s:#991b1b;--red-bg:rgba(239,68,68,.12);
+  --org:#f97316;--org-s:#9a3412;--org-bg:rgba(249,115,22,.12);
+  --ylw:#eab308;--ylw-bg:rgba(234,179,8,.12);
+  --grn:#22c55e;--grn-s:#166534;--grn-bg:rgba(34,197,94,.12);
+  --pur:#a855f7;--pur-bg:rgba(168,85,247,.12);
+  --tel:#06b6d4;--tel-bg:rgba(6,182,212,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx1);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+
+/* HEADER FIX */
+.hdr{background:var(--bg-hdr);border-bottom:1px solid #2d3b50;padding:1.5rem 2rem;color:#ffffff;}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;}
+.brand{display:flex;align-items:center;gap:.6rem}
+.brand-name{font-size:14px;font-weight:800;letter-spacing:.15em;color:#3598d1}
+.brand-ver{font-size:10px;background:var(--blue);color:#fff;padding:1px 6px;border-radius:3px;font-weight:700}
+.hdr-subtext{font-size:11px;color:#94a3b8;font-weight:500;}
+.hdr-body{margin-top:.5rem;}
+.hdr-eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;color:#94a3b8;margin-bottom:.25rem}
+.hdr-title{font-size:2.2rem;font-weight:800;letter-spacing:-.01em;color:#ffffff;line-height:1.1}
+.hdr-sub{font-size:13px;color:#cbd5e1;margin-top:.4rem;font-weight:500;}
+
+/* OCULTAR KPIS */
+#kpis{display:none !important;}
+
+/* TABS */
+.tabs{display:flex;overflow-x:auto;background:#f1f5f9;border-bottom:1px solid #cbd5e1;padding:0 2rem}
+.tab{font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:.75rem 1.2rem;color:#475569;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .18s}
+.tab:hover{color:#1e293b;background:rgba(0,0,0,.03)}
+.tab.on{color:#1C2738;border-bottom-color:#1C2738;background:#ffffff}
+
+/* CONTENT */
+.cnt{padding:1.4rem 2rem;background:#ffffff;}
+.pnl{display:none}
+.pnl.on{display:block}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+.actores-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.gauto{display:grid;grid-template-columns:430px 1fr;gap:1.2rem;align-items:start}
+
+/* CARDS CON FONDO #d5d1d1 */
+.card{background:var(--bg-card);border:1px solid var(--brd);border-radius:10px;padding:1.1rem 1.2rem;color:var(--tx1)}
+.card2{background:var(--bg-card2);border:1px solid var(--brd2);border-radius:10px;padding:1.1rem 1.2rem;color:var(--tx1)}
+.cv{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:.55rem}
+.cval{font-size:2rem;font-weight:800;line-height:1}
+.csub{font-size:11px;color:var(--tx2);margin-top:.3rem}
+
+/* SEC LABEL */
+.sl{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#1e293b;margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid #b0b0b0}
+
+/* EMOTION ROWS */
+.emr{padding:9px 0;border-bottom:1px solid #bcbcbc;cursor:pointer;transition:background .12s;border-radius:4px}
+.emr:hover{background:rgba(0,0,0,.03)}
+.emr:last-child{border-bottom:none}
+.emh{display:flex;align-items:center;gap:7px}
+.emd-box{display:none;margin-top:8px;margin-left:17px;background:rgba(255,255,255,.5);border-radius:6px;padding:8px 10px}
+.emd-box.open{display:block}
+.edk{font-size:10.5px;font-weight:700;color:var(--tx1);margin-bottom:3px}
+.edv{font-size:11px;color:var(--tx2);line-height:1.6}
+
+/* DYAD CARDS */
+.dyc{background:var(--bg-card2);border:1px solid var(--brd2);border-radius:10px;padding:1rem 1.1rem;border-top:4px solid}
+.dyn{font-size:14px;font-weight:800;margin-bottom:3px;color:#0f172a}
+.dyf{font-size:11px;color:var(--tx3);font-style:italic;margin-bottom:7px}
+.dyt{font-size:12px;color:var(--tx1);line-height:1.6}
+.dybadge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;float:right;margin-top:-2px}
+
+/* MAPA */
+.mpc{background:var(--bg-card2);border:1px solid var(--brd2);border-radius:10px;padding:.9rem 1rem}
+.mptt{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.mpi{font-size:12px;color:var(--tx1);padding:5px 0;border-bottom:1px solid #bcbcbc;display:flex;align-items:flex-start;gap:6px}
+.mpi:last-child{border-bottom:none}
+.mpd{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* QUOTES */
+.qi{padding:9px 0;border-bottom:1px solid #bcbcbc}
+.qi:last-child{border-bottom:none}
+.qt{font-size:12.5px;font-style:italic;color:#0f172a;line-height:1.55}
+.qt::before{content:'"';color:#1C2738;font-style:normal;font-weight:700}
+.qt::after{content:'"';color:#1C2738;font-style:normal;font-weight:700}
+.qm{font-size:10.5px;color:var(--tx3);margin-top:3px;font-weight:600}
+
+/* SEGMENTOS Y PERFILES (SEGMENTA) */
+.segcard{background:var(--bg-card);border:1px solid var(--brd);border-radius:12px;overflow:hidden;margin-bottom:1.1rem}
+.seghead{padding:1rem 1.3rem;color:#fff}
+.segtipo{font-size:10px;font-weight:800;letter-spacing:.12em;opacity:.9;text-transform:uppercase}
+.segnombre{font-size:19px;font-weight:800;margin-top:2px}
+.segsub{font-size:11.5px;opacity:.95;margin-top:2px}
+.segmeta{display:flex;gap:.5rem;margin-top:.55rem;flex-wrap:wrap}
+.segbadge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4)}
+.segquote{font-size:13px;font-style:italic;color:#0f172a;line-height:1.6;padding:.85rem 1.3rem;border-left:4px solid;background:rgba(255,255,255,.3)}
+.segbody{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:1px solid #bcbcbc}
+.segcol{padding:1rem 1.2rem;border-right:1px solid #bcbcbc}
+.segcol:last-child{border-right:none}
+.segcoltt{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0f172a;margin-bottom:.6rem}
+.segrow{font-size:11.5px;color:var(--tx1);line-height:1.6;margin-bottom:.55rem}
+.segrow b{color:#0f172a;display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:1px;font-weight:800}
+.segtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:.3rem}
+.segtag{font-size:10px;padding:2px 8px;border-radius:5px;font-weight:700}
+.segfoot{padding:.8rem 1.3rem;border-top:1px solid #bcbcbc;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;background:rgba(0,0,0,.03)}
+.segvec{font-size:11px;color:var(--tx1)}
+.segvec b{color:#0f172a}
+.segpersu{font-size:10px;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:.03em}
+@media(max-width:780px){.segbody{grid-template-columns:1fr}.segcol{border-right:none;border-bottom:1px solid #bcbcbc}}
+
+/* SEMAFORO */
+.sem{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #bcbcbc}
+.sem:last-child{border-bottom:none}
+.semd{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.seml{font-size:12px;color:var(--tx1);flex:1;font-weight:500}
+.semv{font-size:12px;font-weight:800}
+
+/* ACTOR CARD */
+.ac{background:var(--bg-card2);border:1px solid var(--brd2);border-radius:10px;overflow:hidden}
+.ach{padding:.9rem 1.1rem;border-bottom:1px solid #bcbcbc;background:rgba(255,255,255,.2)}
+.acn{font-size:14px;font-weight:800;color:#0f172a}
+.acr{font-size:11px;color:var(--tx2);margin-top:2px;font-weight:600}
+.acb{padding:.9rem 1.1rem}
+.acrow{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #bcbcbc;font-size:12px}
+.acrow:last-child{border-bottom:none}
+.ack{color:var(--tx3);font-size:11px;font-weight:700}
+.acv{color:#0f172a;font-weight:600;text-align:right;max-width:65%}
+
+/* CONCEPTO */
+.cbox{background:linear-gradient(135deg,rgba(28,39,56,.12),rgba(28,39,56,.05));border:1px solid rgba(28,39,56,.25);border-radius:12px;padding:1.2rem 1.4rem;border-left:5px solid #1C2738}
+.cbox-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#1C2738;margin-bottom:.35rem}
+.cbox-name{font-size:20px;font-weight:800;color:#0f172a;margin-bottom:.45rem}
+.cbox-text{font-size:12.5px;color:var(--tx1);line-height:1.72}
+
+/* FOOTER PERSONALIZADO */
+.footer{background:#1C2738;border-top:1px solid rgba(255,255,255,.1);padding:14px 24px;font-size:11px;color:#94A3B8;display:flex;flex-wrap:wrap;gap:8px;margin-top:40px;border-radius:0 0 8px 8px}
+
+/* CHART CONTAINER */
+.cw{position:relative}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#f1f5f9}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+
+/* RESPONSIVE */
+@media(max-width:780px){
+  .gauto,.g2,.g3,.g4,.actores-g3{grid-template-columns:1fr}
+  .hdr-title{font-size:1.7rem}
+  .cnt{padding:1rem}
+  .tabs{padding:0 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="brand">
+      <span class="brand-name">EMOCIONES</span>
+    </div>
+    <div class="hdr-subtext"> MONITOREO ACTIVO · Mayo–Agosto 2026</div>
+  </div>
+  <div class="hdr-body">
+  
+    <div class="hdr-title">NAUCALPAN DE JUÁREZ</div>
+    <div class="hdr-sub">// ESTUDIO DE HUMOR SOCIAL EMOCIONAL · ANÁLISIS TERRITORIAL <br>Presidencia Municipal · Isaac Montoya Márquez (Morena) · Rumbo a la elección 2027</div>
+  </div>
+</div>
+
+<!-- TABS (Sin pestaña de recomendaciones) -->
+<div class="tabs">
+  <div class="tab on"  onclick="ST('flor',this)"> Flor de Emociones</div>
+  <div class="tab"     onclick="ST('mapa',this)"> Mapa Social</div>
+  <div class="tab"     onclick="ST('diadas',this)"> Díadas</div>
+  <div class="tab"     onclick="ST('identidad',this)"> Identidad Política</div>
+  <div class="tab"     onclick="ST('actores',this)"> Actores</div>
+  <div class="tab"     onclick="ST('segmentos',this)"> Segmentos y Perfiles</div>
+</div>
+
+<!-- ══════════════════════════════════════════════ CONTENT -->
+<div class="cnt">
+
+<!-- KPIs Ocultos -->
+<div class="g4" style="margin-bottom:1rem" id="kpis"></div>
+
+<!-- FLOR -->
+<div class="pnl on" id="pnl-flor">
+  <div class="gauto" style="margin-bottom:1rem">
+    <div>
+      <div class="sl">Rueda de Plutchik — <span id="whl-territory"></span></div>
+      <div class="card" style="padding:.8rem;text-align:center">
+        <div id="wheel-wrap"></div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:.4rem;font-weight:600">Toca cualquier pétalo activo para ver detalles</div>
+      </div>
+      <div class="card" style="margin-top:.75rem;padding:.75rem 1rem">
+        <div class="cv">Leyenda de Intensidad</div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px"><div id="leg-hi" style="width:11px;height:11px;border-radius:50%"></div><span style="font-size:11px;color:var(--tx1);font-weight:600">Alta ●●●</span></div>
+          <div style="display:flex;align-items:center;gap:5px"><div id="leg-md" style="width:11px;height:11px;border-radius:50%"></div><span style="font-size:11px;color:var(--tx1);font-weight:600">Media ●●○</span></div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:11px;height:11px;border-radius:50%;background:#94a3b8"></div><span style="font-size:11px;color:var(--tx1);font-weight:600">Inactiva ○○○</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="sl">Emociones Activas — clic para expandir</div>
+      <div class="card" id="em-list"></div>
+      <div class="card" style="margin-top:.75rem;padding:.9rem 1rem">
+        <div class="sl" style="margin-bottom:.5rem">Emociones Secundarias (Latentes)</div>
+        <div id="em-sec"></div>
+      </div>
+    </div>
+  </div>
+  <div class="cbox" style="margin-bottom:1rem" id="concepto-box"></div>
+  <div class="card">
+    <div class="sl">Distribución de Intensidad Emocional</div>
+    <div class="cw" style="height:200px"><canvas id="ch-intens" role="img" aria-label="Intensidad emocional por emoción"></canvas></div>
+  </div>
+</div>
+
+<!-- MAPA -->
+<div class="pnl" id="pnl-mapa">
+  <div class="g3" style="margin-bottom:1rem" id="mapa-cols"></div>
+  <div class="g2" style="margin-bottom:1rem">
+    <div class="card"><div class="sl">Frases Ciudadanas</div><div id="quotes"></div></div>
+    <div class="card">
+      <div class="sl">Emociones por Temática</div>
+      <div class="cw" style="height:260px"><canvas id="ch-temas" role="img" aria-label="Emociones por temática"></canvas></div>
+    </div>
+  </div>
+  <div class="card"><div class="sl">Semáforo Emocional del Territorio</div><div class="g3" id="semaforo"></div></div>
+</div>
+
+<!-- DÍADAS -->
+<div class="pnl" id="pnl-diadas">
+  <div class="g3" style="margin-bottom:1rem" id="dyad-cards"></div>
+  <div class="g2">
+    <div class="card">
+      <div class="sl">Score de Riesgo por Díada</div>
+      <div class="cw" style="height:220px"><canvas id="ch-diadas" role="img" aria-label="Riesgo por díada"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="sl">Interpretación Estratégica</div>
+      <div id="dyad-interp" style="font-size:12.5px;color:var(--tx1);line-height:1.75;margin-top:.3rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- IDENTIDAD -->
+<div class="pnl" id="pnl-identidad">
+  <div class="cbox" style="margin-bottom:1rem" id="id-pregunta"></div>
+  <div class="g2" style="margin-bottom:1rem">
+    <div class="card"><div class="sl">Percepción del Gobierno Municipal</div><div id="gov-sem"></div></div>
+    <div class="card">
+      <div class="sl">Carga Emocional por Partido</div>
+      <div class="cw" style="height:220px"><canvas id="ch-partidos" role="img" aria-label="Emociones por partido"></canvas></div>
+    </div>
+  </div>
+  <div class="card"><div class="sl">Percepción Ciudadana por Partido</div><div id="partidos-tbl"></div></div>
+</div>
+
+<!-- ACTORES -->
+<div class="pnl" id="pnl-actores">
+  <div class="actores-g3" style="margin-bottom:1rem" id="actores-grid"></div>
+  <div class="card">
+    <div class="sl">Mapa de Posicionamiento Emocional de Actores</div>
+    <div class="cw" style="height:280px"><canvas id="ch-actores" role="img" aria-label="Posicionamiento emocional de actores"></canvas></div>
+  </div>
+</div>
+
+<!-- SEGMENTOS Y PERFILES -->
+<div class="pnl" id="pnl-segmentos">
+  <div class="card" style="margin-bottom:1rem">
+    <div class="sl">Metodología de Segmentación · N × E × I</div>
+    <div id="seg-intro" style="font-size:12.5px;color:var(--tx1);line-height:1.75"></div>
+  </div>
+  <div id="seg-cards"></div>
+</div>
+
+<!-- PIE DE PÁGINA (FOOTER) -->
+<footer class="footer">
+  <span>EMOCIONES  · SIE</span>
+  <span>|</span>
+  <span>Naucalpan de Juárez</span>
+  <span>|</span>
+  <span>Análisis Territorial 2026</span>
+</footer>
+
+</div><!-- /cnt -->
+
+<!-- ══════════════════════════════════════════════ DATA + ENGINE -->
+<script>
+const D = {
+  territory: "Naucalpan de Juárez",
+  subtitle:  "Presidencia Municipal · Isaac Montoya Márquez (Morena) · Rumbo a la elección 2027",
+  date:      "Mayo–Agosto 2026",
+  riskLevel: "ALTO",
+  concept:   "Seguridad de Escritorio",
+  conceptDesc: "El gobierno municipal exhibe cifras oficiales de mejora en seguridad (ENSU, robo de vehículo, extorsión), pero la experiencia cotidiana —bloqueos por cobro de piso, una desaparición sin resolver, agua que no llega— desmiente ese relato en la calle. La ciudadanía no discute los números: discute si los números describen su vida.",
+
+  emotions: [
+    { key:"ira",          label:"Ira / Furia",      active:true,  intensity:3,
+      deg:180, color:["#FEE2E2","#FCA5A5","#B91C1C"],
+      sublabel:"Furia · Ira · Enfado",
+      triggers:["Extorsión y cobro de piso a transportistas y comerciantes","Bloqueos recurrentes en Periférico Norte y Gustavo Baz por inacción oficial","Contraste entre discurso triunfalista y vida cotidiana"],
+      consequences:["Movilizaciones y bloqueos como único canal de negociación efectivo","Erosión acelerada de la marca Morena en el municipio","Riesgo de radicalización de protestas gremiales"] },
+    { key:"miedo",        label:"Miedo / Terror",   active:true,  intensity:3,
+      deg:0,   color:["#CFFAFE","#67E8F9","#0E7490"],
+      sublabel:"Terror · Miedo · Temor",
+      triggers:["Desaparición del joven Douglas Ricardo Mafre Pérez sin avances de la FGJEM","Extorsión activa a comercios y unidades de transporte","Desabasto intermitente de agua en colonias como Independencia, Miramar y Río Hondo"],
+      consequences:["Autocensura y desconfianza para denunciar extorsión","Demanda ciudadana de resultados visibles, no solo estadísticos","Sensación de vivir 'dos Naucalpan' distintos según la colonia"] },
+    { key:"anticipacion", label:"Anticipación",     active:true,  intensity:2,
+      deg:225, color:["#FFEDD5","#FDba74","#C2410C"],
+      sublabel:"Vigilancia · Anticipación · Interés",
+      triggers:["Arranque de movimientos rumbo a la sucesión municipal 2027","Caída de Morena en intención de voto (42.1% a 37.8% entre abril y julio)","Aparición de David Parra como perfil ciudadano fuerte en el PAN"],
+      consequences:["Vigilancia activa de todo anuncio de gobierno como maniobra electoral","Ventana de oportunidad para narrativas de cambio o continuidad","Polarización anticipada entre 'seguir' y 'castigar'"] },
+    { key:"tristeza",     label:"Tristeza",         active:true,  intensity:2,
+      deg:90,  color:["#EDE9FE","#A78BFA","#4C1D95"],
+      sublabel:"Aflicción · Tristeza · Melancolía",
+      triggers:["Ausencia de resultados en la búsqueda del joven desaparecido","Colonias periféricas que sienten abandono en agua e infraestructura","Comparación con la imagen histórica de Naucalpan como 'municipio próspero'"],
+      consequences:["Narrativa de declive frente al pasado industrial y urbano del municipio","Desmovilización electoral en sectores populares que ya no esperan solución","Vulnerabilidad emocional aprovechable por narrativas de rescate"] },
+    { key:"asco",         label:"Asco / Aversión",  active:true,  intensity:2,
+      deg:135, color:["#DCFCE7","#86EFAC","#15803D"],
+      sublabel:"Aversión · Asco · Aburrimiento",
+      triggers:["Percepción de que las cifras oficiales de seguridad se usan como propaganda","Señalamientos de vínculos entre operadores municipales y crimen organizado en 2025","Doble discurso: crítica opositora ayer, justificación de los mismos rezagos hoy"],
+      consequences:["Desconfianza estructural hacia cualquier cifra que presente el gobierno","Cinismo político que dificulta la persuasión con datos duros","Terreno fértil para narrativas antisistema en redes"] },
+    { key:"alegria",      label:"Alegría",          active:false, intensity:0,
+      deg:-90, color:["#FFF9C4","#FFF176","#F9A825"], sublabel:"Éxtasis · Alegría · Serenidad", triggers:[], consequences:[] },
+    { key:"confianza",    label:"Confianza",        active:true,  intensity:1,
+      deg:-45, color:["#D1FAE5","#6EE7B7","#059669"], sublabel:"Admiración · Confianza · Aceptación",
+      triggers:["Recuperación de espacios deportivos y canchas ('Mundial Social')","Programas educativos de arranque de ciclo escolar 2026-2027","Nuevos elementos de Guardia Municipal y videovigilancia anunciados"],
+      consequences:["Núcleo leal que sostiene el piso duro de Morena pese al desgaste","Capital narrativo aprovechable si se sostiene con hechos verificables","Riesgo de agotarse si no se acompaña de resultados en seguridad y agua"] },
+    { key:"sorpresa",     label:"Sorpresa",         active:true,  intensity:1,
+      deg:45,  color:["#DBEAFE","#93C5FD","#2563EB"], sublabel:"Asombro · Sorpresa · Distracción",
+      triggers:["Caída inesperada de Morena en encuestas internas en solo tres meses","Irrupción de David Parra —exdirigente sindical priista— como fuerza del PAN"],
+      consequences:["Recomposición acelerada del mapa de alianzas rumbo a 2027","Ventana corta para que actores emergentes capitalicen el desconcierto"] },
+  ],
+
+  secondary: [
+    { name:"Desprecio institucional", color:"#ef4444", text:"Ira y Asco combinados producen una lectura de que las instituciones locales protegen intereses ajenos a la ciudadanía —crimen organizado, contratistas, aparato partidista— antes que a los vecinos." },
+    { name:"Nostalgia cívica", color:"#4C1D95", text:"Persiste el recuerdo de Naucalpan como referente industrial y urbano del Valle de México, usado como vara para medir —y lamentar— el presente." },
+  ],
+
+  dyads: [
+    { name:"Desprecio Institucional", formula:"Ira + Asco", type:"Primaria",
+      text:"La ciudadanía no solo se enoja por la extorsión y el desabasto: desprecia la narrativa oficial que presenta cifras de mejora mientras la vida cotidiana no cambia. Es el terreno más fértil para el voto de castigo hacia Morena en 2027.", risk:"CRÍTICO", score:88 },
+    { name:"Desesperación Territorial", formula:"Miedo + Tristeza", type:"Secundaria",
+      text:"La combinación de miedo (extorsión, desaparición) y tristeza (abandono en servicios) genera una sensación de indefensión en colonias periféricas, con riesgo de desmovilización electoral si no se ofrece un canal de esperanza creíble.", risk:"ALTO", score:74 },
+    { name:"Vigilancia Electoral Agresiva", formula:"Anticipación + Ira", type:"Terciaria",
+      text:"La proximidad del recambio municipal 2027 convierte cada acto de gobierno en materia de escrutinio hostil; el electorado observa con suspicacia cualquier anuncio, listo para capitalizarlo como evidencia de fracaso o de campaña anticipada.", risk:"ALTO", score:70 },
+  ],
+  dyadInterp: "Las tres díadas conviven en una misma lógica: la ciudadanía de Naucalpan ya no evalúa promesas ni cifras aisladas, sino la coherencia entre el discurso oficial y la experiencia vivida. El Desprecio Institucional es el más peligroso para el gobierno en turno porque no se resuelve con más comunicación, sino con hechos verificables en extorsión y agua. La Desesperación Territorial concentra el riesgo de abstención en las zonas más golpeadas, mientras que la Vigilancia Electoral Agresiva adelanta el costo político de cualquier evento negativo: en el actual clima, un bloqueo o una denuncia viral pesa más que diez anuncios de programas sociales. Para cualquier actor —gobierno u oposición— la estrategia ganadora pasa por demostrar, no declarar.",
+
+  problematics: [
+    "Extorsión y cobro de piso a transportistas y comerciantes",
+    "Desaparición de personas sin avances visibles en la investigación",
+    "Desabasto de agua potable en colonias periféricas y de las partes altas",
+    "Vialidades deterioradas y movilidad colapsada por bloqueos constantes",
+    "Brecha entre las cifras oficiales de seguridad y la percepción vivida en la calle",
+    "Desgaste acelerado de la marca Morena en el gobierno municipal",
+  ],
+  fears: [
+    "Ser víctima de extorsión al sostener un negocio o una unidad de transporte",
+    "Que un hijo o familiar desaparezca y la autoridad no actúe a tiempo",
+    "Quedarse sin agua de forma indefinida en plena temporada de estiaje",
+    "Que el crimen organizado tenga más control territorial que la autoridad electa",
+    "Que las cifras 'positivas' solo se usen como material de campaña para 2027",
+  ],
+  prides: [
+    "Capacidad de organización vecinal y gremial para exigir soluciones concretas",
+    "Recuperación de espacios deportivos y públicos ('Mundial Social', canchas rescatadas)",
+    "Identidad histórica de Naucalpan como uno de los municipios más prósperos del Valle de México",
+    "Tejido sindical y asociativo fuerte, con capacidad real de movilización (SUTEYM, uniones de transportistas)",
+  ],
+
+  temasChart: [["Extorsión / Seguridad",32,"#B91C1C"],["Agua y servicios básicos",22,"#0E7490"],["Movilidad y vialidades",18,"#C2410C"],["Desaparición y justicia",16,"#4C1D95"],["Política electoral 2027",12,"#15803D"]],
+
+  quotes: [
+    { text:"Nos enseñan una gráfica que dice que estamos mejor, pero a mí me siguen cobrando piso cada semana.", topic:"Extorsión", emotion:"Ira", territory:"Periférico Norte / Parque Naucalli" },
+    { text:"Llevamos meses buscando a mi hijo y las autoridades nada más piden paciencia.", topic:"Desaparición", emotion:"Tristeza", territory:"Colonia San Bartolo" },
+    { text:"Aquí el agua llega cuando bloqueamos, no cuando toca.", topic:"Agua potable", emotion:"Ira", territory:"Independencia / Miramar / Río Hondo" },
+    { text:"Antes de que digan que todo mejoró, que vengan a manejar por el Periférico un martes cualquiera.", topic:"Movilidad", emotion:"Asco", territory:"Cabecera municipal" },
+    { text:"Uno ya no sabe si el alcalde de antes hablaba en serio cuando criticaba lo mismo que hoy justifica.", topic:"Credibilidad institucional", emotion:"Asco", territory:"Naucalpan Centro" },
+    { text:"Con la organización de siempre sí nos hacen caso; solos, nunca nos resuelven nada.", topic:"Organización vecinal", emotion:"Anticipación", territory:"Zona SUTEYM / colonias populares" },
+  ],
+
+  semaforo: [
+    { label:"Estado emocional general",          val:"ALTO", color:"#c2410c" },
+    { label:"Riesgo de voto de castigo",          val:"68/100", color:"#c2410c" },
+    { label:"Potencial de protesta organizada",   val:"78/100", color:"#b91c1c" },
+    { label:"Capital emocional positivo",         val:"32/100", color:"#854d0e" },
+    { label:"Legitimidad institucional percibida",val:"40/100", color:"#854d0e" },
+    { label:"Disposición al diálogo ciudadano",   val:"56/100", color:"#15803d" },
+  ],
+
+  preguntaPolitica: "¿Las cifras que presume el gobierno describen lo que vivimos en la calle, o solo maquillan lo que seguimos padeciendo?",
+  preguntaDesc: "Esta pregunta organiza la identidad política del municipio en 2026: no es una disputa ideológica entre izquierda y derecha, sino una disputa de verificación entre el relato oficial (ENSU, reducción de delitos, videovigilancia) y la evidencia cotidiana (extorsión, bloqueos, una desaparición sin resolver). Quien resuelva esa brecha con hechos, y no con más comunicación, capturará la narrativa rumbo a 2027.",
+
+  govSemaforo: [
+    { label:"Manejo de la seguridad pública",            val:"Cuestionado", color:"#854d0e" },
+    { label:"Atención a extorsión y crimen organizado",   val:"Deficiente", color:"#b91c1c" },
+    { label:"Suministro de agua potable",                 val:"Deficiente", color:"#b91c1c" },
+    { label:"Mantenimiento de vialidades",                val:"Regular", color:"#854d0e" },
+    { label:"Comunicación y transparencia de cifras",     val:"Cuestionado", color:"#b91c1c" },
+    { label:"Programas sociales y educativos",            val:"Aceptable", color:"#15803d" },
+  ],
+
+  partidos: [
+    { nombre:"Morena", emocion:"Ira / Desconfianza", capital:"Medio (en caída)", tendencia:"↓ De 42.1% a 37.8% (abr–jul 2026)", color:"#8B1E3F" },
+    { nombre:"PAN", emocion:"Interés cauteloso", capital:"Bajo–Medio (en ascenso)", tendencia:"↑ Impulsado por irrupción de David Parra", color:"#003D7C" },
+    { nombre:"PRI", emocion:"Indiferencia / Nostalgia", capital:"Bajo", tendencia:"→ Estable, sin figura de arrastre local", color:"#00843D" },
+    { nombre:"Voto de castigo / indecisos", emocion:"Anticipación difusa", capital:"Potencial alto", tendencia:"↑ Espacio disponible sin dueño claro", color:"#475569" },
+  ],
+  partidosChart: [[70,55,15],[30,25,55],[45,50,20],[10,10,75]],
+
+  actores: [
+    { name:"Isaac Montoya Márquez", role:"Presidente Municipal en funciones · Morena · 2025–2027 (busca reelección)", partido:"Morena", borderColor:"#8B1E3F",
+      rows:[["Posición","Alcalde en funciones"],
+            ["Narrativa central","Naucalpan transformado: cifras de seguridad y programas sociales"],
+            ["Vulnerabilidad principal","Brecha entre discurso oficial y extorsión/agua/desaparición vividas"],
+            ["Tendencia de intención de voto","↓ De 42.1% a 37.8% entre abril y julio de 2026"],
+            ["Rol narrativo","Villano institucional en ascenso — destino de la Ira por omisión"],
+            ["Riesgo estratégico","Alto: cualquier hecho negativo se lee como confirmación del relato opositor"]] },
+    { name:"David Parra Sánchez", role:"Aspirante ciudadano por el PAN · exdirigente SUTEYM · exdiputado local PRI", partido:"PAN", borderColor:"#003D7C",
+      rows:[["Posición","Aspirante — proceso interno panista en curso"],
+            ["Narrativa central","Organización territorial y sindical frente al desorden institucional"],
+            ["Fortaleza principal","Estructura propia (SUTEYM, Proyecto Social Naucalpan A.C.) mayor que la de su partido"],
+            ["Vulnerabilidad principal","Trayectoria priista reciente; percepción de oportunismo partidista"],
+            ["Rol narrativo","Héroe potencial — puede capturar la Ira difusa contra la extorsión"],
+            ["Riesgo estratégico","Medio: depende de formalizar candidatura y sostener el discurso 'ciudadano'"]] },
+    { name:"Elías Rescala Jiménez", role:"Diputado local · PRI · distrito con cabecera en Naucalpan", partido:"PRI", borderColor:"#00843D",
+      rows:[["Posición","Diputado local en funciones, perfil técnico-jurídico"],
+            ["Narrativa central","Experiencia institucional y capacidad de negociación legislativa"],
+            ["Fortaleza principal","Trayectoria de gestión pública y relación con el Ejecutivo estatal"],
+            ["Vulnerabilidad principal","Bajo reconocimiento ciudadano fuera de la clase política"],
+            ["Rol narrativo","Actor de contraste técnico — sin conexión emocional directa con la ira ciudadana"],
+            ["Riesgo estratégico","Bajo–medio: no gobierna, pero arranca con déficit de conocimiento público"]] },
+  ],
+  actoresRadar: { labels:["Isaac Montoya (Morena)","David Parra (PAN)","Elías Rescala (PRI)"],
+    data:[[42,70,38,68,55,35],[58,75,55,15,40,50],[30,35,25,10,45,38]],
+    colors:["#8B1E3F","#003D7C","#00843D"] },
+
+  segIntro: "Segmentación digital construida bajo el eje Narrativa × Emoción × Identidad (N×E×I), a partir de conversación pública sobre extorsión, agua, movilidad, la desaparición de Douglas Ricardo Mafre Pérez y el proceso rumbo a 2027, capturada en X/Twitter, Facebook vecinal, comentarios de medios locales y grupos de transportistas y comerciantes entre mayo y agosto de 2026. Se identifican 4 tipos de elector con distinta prioridad de inversión: el orden de la jerarquía es Indeciso Evaluador → Apático Potencial → Leal Activo → Adversario Simbólico (sin inversión).",
+
+  segmentos: [
+    {
+      tipo:"T1", nombre:"El Comerciante de Lomas Verdes", subtitulo:"Leal Activo · orgullo e identidad con el orden y la certeza económica",
+      peso:"22% del electorado estimado", persuasibilidad:"YA ES NUESTRO", color:"#1C2738",
+      frase:"\"Yo no quiero promesas nuevas, quiero que nadie más me cobre piso y que el que me gobierne sepa lo que es tener un changarro.\"",
+      perfil:{ edadGenero:"38–55 años, mixto, mayoría hombres con negocio propio", zona:"Lomas Verdes, Alce Blanco, corredor comercial de Periférico Norte", ocupacion:"Comerciante establecido, pequeño empresario, transportista concesionario", escolaridad:"Media superior a licenciatura trunca; ingresos medios", digital:"Facebook y WhatsApp de cámaras y uniones comerciales; consumo de noticieros locales", historia:"Voto históricamente panista o de oposición al partido en el gobierno; alta participación electoral" },
+      emocional:{ emocion:"Ira contenida (intensidad 2) dirigida a la extorsión y a la inacción oficial", cotidiano:"Abre su negocio calculando el costo semanal del 'derecho de piso' como un gasto fijo más", tension:"Entre sostener el negocio y denunciar (miedo a represalias)", dolor:"Sentir que trabajar honestamente ya no garantiza estabilidad", miedo:"Perder el negocio por extorsión o por un bloqueo que ahuyenta clientes", orgullo:"Haber construido su negocio con esfuerzo propio, sin apoyos de gobierno", narrativa:"'El que ordena la calle, ordena el municipio'" },
+      problemas:["Extorsión / cobro de piso","Bloqueos que afectan ventas","Vialidades deterioradas"],
+      orgulloComunitario:"Identidad gremial fuerte (uniones de transportistas y comerciantes con capacidad real de negociar con el gobierno)",
+      consumoDigital:"Grupos de WhatsApp de cámara de comercio, Facebook de la colonia, noticieros locales en vivo",
+      loQueLoMoviliza:"Un candidato que hable de orden público y seguridad económica con hechos verificables, no discursos",
+      loQueLoAleja:"Percibir que el candidato solo busca su voto sin plan concreto contra la extorsión",
+      frameCognitivo:"Marco de Seguridad Económica: 'sin orden en la calle no hay negocio que sobreviva'",
+      palanca:"Plan verificable y con fechas contra extorsión, coordinado con las propias uniones gremiales",
+      vector:{ canal:"WhatsApp gremial + recorridos presenciales en corredores comerciales", tono:"Firme, técnico, con datos concretos", formato:"Mensajes breves + reuniones directas con líderes de unión", inversion:"●●●●○" }
+    },
+    {
+      tipo:"T4", nombre:"La Familia de San Bartolo", subtitulo:"Indeciso Evaluador · ansiedad y esperanza condicionada", peso:"31% del electorado estimado",
+      persuasibilidad:"MUY ALTA", color:"#003D7C",
+      frase:"\"No estoy peleado con nadie, pero necesito ver que el agua llega y que a mi hijo lo cuidan; lo demás son discursos.\"",
+      perfil:{ edadGenero:"28–45 años, mayoría mujeres jefas o corresponsables de hogar", zona:"San Bartolo, Independencia, Miramar, Río Hondo", ocupacion:"Empleo informal o formal de ingreso medio-bajo, trabajo fuera del municipio", escolaridad:"Secundaria a media superior; ingresos bajos-medios", digital:"Facebook de grupos vecinales y de colonia, TikTok informativo, WhatsApp de mamás", historia:"Voto variable entre elecciones; decide cerca de la jornada según el ambiente inmediato" },
+      emocional:{ emocion:"Ansiedad (Miedo + Anticipación, intensidad 2-3) por seguridad y servicios básicos", cotidiano:"Organiza la semana en función de si habrá agua y si es seguro que los hijos salgan solos", tension:"Entre la lealtad histórica a Morena por programas sociales y el hartazgo por agua y seguridad", dolor:"Sentir que su colonia es la última en recibir soluciones", miedo:"Que la desaparición del joven Mafre Pérez se repita con alguien cercano", orgullo:"La solidaridad vecinal cuando hay una emergencia (agua, salud, seguridad)", narrativa:"'A nosotros nos toca pedir a gritos lo que en otras colonias ya tienen'" },
+      problemas:["Desabasto de agua potable","Inseguridad y desaparición de personas","Sensación de abandono frente a otras zonas"],
+      orgulloComunitario:"Redes de apoyo mutuo entre vecinas y comités de colonia muy activos",
+      consumoDigital:"Grupos de Facebook de la colonia, transmisiones en vivo de bloqueos y protestas, TikTok de noticias breves",
+      loQueLoMoviliza:"Resultados tangibles y verificables en agua y seguridad, no solo anuncios",
+      loQueLoAleja:"Promesas repetidas sin cumplir o el uso electoral evidente de programas sociales",
+      frameCognitivo:"Marco de Cuidado: 'un gobierno se mide por si cuida a los que menos tienen'",
+      palanca:"Compromisos verificables de suministro de agua y atención inmediata a denuncias de desaparición",
+      vector:{ canal:"Facebook vecinal + brigadas casa por casa + WhatsApp de comités de colonia", tono:"Cercano, empático, sin tecnicismos", formato:"Video corto testimonial + visitas directas", inversion:"●●●●●" }
+    },
+    {
+      tipo:"T6", nombre:"El Joven de Transmisiones", subtitulo:"Apático Potencial · desánimo y enojo latente", peso:"29% del electorado estimado",
+      persuasibilidad:"ALTA (con dolor propio)", color:"#854d0e",
+      frase:"\"Ni voto ni me quejo, para qué, si de todos modos me toca hacer dos horas para llegar al trabajo por el bloqueo del día.\"",
+      perfil:{ edadGenero:"18–29 años, mixto", zona:"Corredor Cuatro Caminos–Transmisiones, zonas conurbadas con la CDMX", ocupacion:"Estudiante o trabajador informal/plataformas, movilidad diaria hacia CDMX", escolaridad:"Media superior a universitaria incompleta; ingresos bajos", digital:"TikTok e Instagram como fuente principal de noticias; X para desahogo y memes", historia:"Abstención histórica alta; nulo o nulo interés declarado en política partidista" },
+      emocional:{ emocion:"Desánimo con Asco latente (intensidad 2) hacia la clase política en general", cotidiano:"Pierde horas diarias por bloqueos de transporte y tráfico que no eligió ni puede evitar", tension:"Entre la indiferencia declarada y el enojo real que expresa en redes cuando el bloqueo lo afecta", dolor:"Sentir que su tiempo y su movilidad no le importan a nadie en el gobierno", miedo:"Quedar atrapado o ser víctima de inseguridad en su trayecto diario", orgullo:"Resolver su vida 'a pesar del sistema', con rutas alternas y redes de apoyo entre pares", narrativa:"'A la política no le importo hasta que necesita mi voto'" },
+      problemas:["Movilidad colapsada por bloqueos constantes","Falta de oportunidades laborales formales","Percepción de que ningún partido representa a su generación"],
+      orgulloComunitario:"Cultura de resolver problemas cotidianos en comunidad digital (grupos de rutas, apps de transporte compartido)",
+      consumoDigital:"TikTok, Instagram, X; alto consumo de contenido breve y memes políticos",
+      loQueLoMoviliza:"Un mensaje directo sobre movilidad y empleo joven, sin retórica de campaña tradicional",
+      loQueLoAleja:"Discurso institucional genérico o spots que no reconocen su realidad cotidiana",
+      frameCognitivo:"Marco de Tiempo Robado: 'me quitan horas de vida y nadie responde por eso'",
+      palanca:"Propuesta concreta de movilidad y empleo joven, comunicada en su propio lenguaje digital",
+      vector:{ canal:"TikTok e Instagram con líderes de opinión locales, no medios tradicionales", tono:"Directo, sin solemnidad, humor crítico permitido", formato:"Video corto vertical + creadores locales", inversion:"●●●○○" }
+    },
+    {
+      tipo:"T5", nombre:"El Guardián del Movimiento", subtitulo:"Adversario Simbólico · convicción y pertenencia", peso:"18% del electorado estimado",
+      persuasibilidad:"NULA", color:"#334155",
+      frase:"\"Lo que estamos viviendo es la herencia de años de otros gobiernos; con la 4T y la presidenta Sheinbaum vamos por buen camino.\"",
+      perfil:{ edadGenero:"45+ años, mixto, con presencia importante de mujeres beneficiarias de programas sociales", zona:"Distribuido en todo el municipio, con mayor densidad en colonias populares consolidadas", ocupacion:"Beneficiario de programas sociales, base sindical o de estructura territorial de Morena", escolaridad:"Diversa; identidad política por encima del nivel socioeconómico", digital:"Facebook con páginas oficialistas y de defensa del movimiento; baja exposición a medios críticos", historia:"Voto duro y consistente por Morena desde 2018; alta participación electoral" },
+      emocional:{ emocion:"Confianza / Lealtad identitaria (intensidad 2), con Ira dirigida hacia 'la oposición y la prensa'", cotidiano:"Defiende activamente al gobierno municipal y federal en conversaciones y redes", tension:"Entre la evidencia local de rezagos y la lealtad al proyecto nacional", dolor:"Que se cuestione un proyecto que percibe como el único que los ha volteado a ver", miedo:"Que el regreso de la oposición signifique perder programas sociales", orgullo:"Ser parte de una transformación histórica más allá de lo local", narrativa:"'Lo que falta es herencia del pasado, no responsabilidad de hoy'" },
+      problemas:["Percibe la crítica como ataque político, no como demanda legítima","Minimiza la extorsión y el desabasto como casos aislados"],
+      orgulloComunitario:"Sentido de pertenencia a un movimiento nacional con arraigo territorial",
+      consumoDigital:"Páginas de Facebook oficialistas, transmisiones de eventos de gobierno, comunicación institucional directa",
+      loQueLoMoviliza:"No aplica inversión directa: se monitorea para detectar grietas internas espontáneas",
+      loQueLoAleja:"No aplica — es simbólicamente inamovible en el corto plazo",
+      frameCognitivo:"Marco de Transformación: 'defender el proyecto es defender a la gente'",
+      palanca:"Ninguna de inversión directa; solo monitoreo de fracturas internas (desgaste, corrupción local)",
+      vector:{ canal:"No aplica inversión — monitoreo pasivo de su conversación interna", tono:"No aplica", formato:"No aplica", inversion:"○○○○○" }
+    },
+  ],
+};
+
+/* TABS CONTROL */
+function ST(id,el){
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pnl-'+id).classList.add('on');
+  el.classList.add('on');
+}
+
+/* SVG WHEEL */
+const CX=220,CY=220,R=[62,108,154,200],GAP=1.4;
+const rad=d=>d*Math.PI/180;
+const pt=(r,d)=>[CX+r*Math.cos(rad(d)),CY+r*Math.sin(rad(d))];
+function arc(r1,r2,s,e){
+  const a=s+GAP,b=e-GAP;
+  const[x1,y1]=pt(r1,a),[x2,y2]=pt(r2,a),[x3,y3]=pt(r2,b),[x4,y4]=pt(r1,b);
+  return`M${x1.toFixed(2)},${y1.toFixed(2)}L${x2.toFixed(2)},${y2.toFixed(2)}A${r2},${r2} 0 0,1 ${x3.toFixed(2)},${y3.toFixed(2)}L${x4.toFixed(2)},${y4.toFixed(2)}A${r1},${r1} 0 0,0 ${x1.toFixed(2)},${y1.toFixed(2)}Z`;
+}
+const IN=["#cbd5e1","#94a3b8","#64748b"];
+
+function buildWheel(){
+  let p="";
+  D.emotions.forEach(em=>{
+    const{active:ac,intensity:iv,color,deg,key,label}=em;
+    [1,2,3].forEach(i=>{
+      const fill=ac&&iv>=i?color[i-1]:IN[i-1];
+      p+=`<path d="${arc(R[i-1],R[i],deg,deg+45)}" fill="${fill}" stroke="#ffffff" stroke-width="2" ${ac?`onclick="toggleEm('${key}')" style="cursor:pointer"`:''}/>`;
+    });
+    const md=deg+22.5,lr=R[3]+23;
+    const[lx,ly]=pt(lr,md);
+    const an=Math.cos(rad(md))>.12?"start":Math.cos(rad(md))<-.12?"end":"middle";
+    p+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${an}" dominant-baseline="middle" font-size="11" font-family="-apple-system,sans-serif" fill="${ac?"#0f172a":"#64748b"}" font-weight="${ac?"700":"400"}" style="pointer-events:none">${label}</text>`;
+  });
+  return`<svg width="440" height="440" viewBox="0 0 440 440">${p}<circle cx="${CX}" cy="${CY}" r="${R[0]-4}" fill="#d5d1d1" stroke="#bcbcbc" stroke-width="1.5"/><text x="${CX}" y="${CY-7}" text-anchor="middle" font-size="9.5" font-family="-apple-system,sans-serif" fill="#1C2738" font-weight="800" letter-spacing="2">HUMOR</text><text x="${CX}" y="${CY+7}" text-anchor="middle" font-size="9.5" font-family="-apple-system,sans-serif" fill="#1C2738" font-weight="800" letter-spacing="2">SOCIAL</text></svg>`;
+}
+
+function toggleEm(key){
+  const d=document.getElementById("emd-"+key);
+  if(!d)return;
+  const open=d.classList.contains("open");
+  document.querySelectorAll(".emd-box").forEach(x=>x.classList.remove("open"));
+  if(!open)d.classList.add("open");
+}
+
+/* CHARTS DEFAULT CONFIG */
+const CD={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{backgroundColor:"#1C2738",titleColor:"#fff",bodyColor:"#cbd5e1",borderColor:"#2d3b50",borderWidth:1}},
+  scales:{x:{ticks:{color:"#334155",font:{size:11,weight:"600"}},grid:{color:"rgba(0,0,0,.06)"}},
+          y:{ticks:{color:"#334155",font:{size:11,weight:"600"}},grid:{color:"rgba(0,0,0,.06)"}}}};
+
+/* RENDER FUNCTION */
+function init(){
+  document.getElementById("whl-territory").textContent=D.territory;
+
+  /* Wheel */
+  document.getElementById("wheel-wrap").innerHTML=buildWheel();
+  const activeEm=D.emotions.filter(e=>e.active);
+  const hiColor=activeEm.filter(e=>e.intensity===3)[0];
+  const mdColor=activeEm.filter(e=>e.intensity===2)[0];
+  if(hiColor)document.getElementById("leg-hi").style.background=hiColor.color[2];
+  if(mdColor)document.getElementById("leg-md").style.background=mdColor.color[1];
+
+  /* Emotion list */
+  const emList=document.getElementById("em-list");
+  emList.innerHTML=activeEm.map(em=>{
+    const iv=em.intensity;
+    const riskTx=iv===3?"#b91c1c":iv===2?"#c2410c":"#854d0e";
+    const dots="●".repeat(iv)+'<span style="color:#94a3b8">'+"○".repeat(3-iv)+"</span>";
+    return`<div class="emr" onclick="toggleEm('${em.key}')">
+      <div class="emh">
+        <div style="width:10px;height:10px;border-radius:50%;background:${em.color[2]};flex-shrink:0"></div>
+        <span style="font-size:13px;font-weight:700;color:var(--tx1)">${em.label}</span>
+        <span style="margin-left:auto;font-size:13px;color:${riskTx}">${dots}</span>
+      </div>
+      <div style="font-size:10.5px;color:var(--tx3);margin-top:2px;margin-left:17px;font-weight:600">${em.sublabel}</div>
+      <div class="emd-box" id="emd-${em.key}">
+        ${em.triggers.length?`<div class="edk">Detonantes:</div><div class="edv">${em.triggers.join(" · ")}</div>`:""}
+        ${em.consequences.length?`<div class="edk" style="margin-top:5px">Consecuencias:</div><div class="edv">${em.consequences.join(" · ")}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+
+  /* Secondary */
+  document.getElementById("em-sec").innerHTML=D.secondary.map(s=>`
+    <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #bcbcbc">
+      <div style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0;margin-top:4px"></div>
+      <div><div style="font-size:12px;font-weight:700;color:var(--tx1)">${s.name}</div>
+      <div style="font-size:11px;color:var(--tx2);margin-top:2px;line-height:1.55">${s.text}</div></div>
+    </div>`).join("");
+
+  /* Concepto */
+  document.getElementById("concepto-box").innerHTML=`<div class="cbox-label">Concepto Central del Territorio</div><div class="cbox-name">"${D.concept}"</div><div class="cbox-text">${D.conceptDesc}</div>`;
+
+  /* Mapa */
+  const makeMP=(arr,dc)=>arr.map(t=>`<div class="mpi"><div class="mpd" style="background:${dc}"></div>${t}</div>`).join("");
+  document.getElementById("mapa-cols").innerHTML=`
+    <div class="mpc"><div class="mptt" style="color:#854d0e">⚠ Problemáticas</div>${makeMP(D.problematics,"#854d0e")}</div>
+    <div class="mpc"><div class="mptt" style="color:#b91c1c">⬡ Miedos</div>${makeMP(D.fears,"#b91c1c")}</div>
+    <div class="mpc"><div class="mptt" style="color:#15803d">★ Orgullos</div>${makeMP(D.prides,"#15803d")}</div>`;
+
+  /* Quotes */
+  document.getElementById("quotes").innerHTML=D.quotes.map(q=>`<div class="qi"><div class="qt">${q.text}</div><div class="qm">${q.topic} · ${q.emotion} · ${q.territory}</div></div>`).join("");
+
+  /* Semaforo */
+  const makeSem=(arr,id)=>{ document.getElementById(id).innerHTML=arr.map(s=>`<div class="sem"><div class="semd" style="background:${s.color}"></div><div class="seml">${s.label}</div><div class="semv" style="color:${s.color}">${s.val}</div></div>`).join(""); };
+  makeSem(D.semaforo,"semaforo");
+
+  /* Dyads */
+  const riskHex={CRÍTICO:"#b91c1c",ALTO:"#c2410c",MEDIO:"#854d0e"};
+  const riskBg={CRÍTICO:"#fee2e2",ALTO:"#ffedd5",MEDIO:"#fef9c3"};
+  document.getElementById("dyad-cards").innerHTML=D.dyads.map(d=>`<div class="dyc" style="border-top-color:${riskHex[d.risk]||"#64748b"}">
+    <span class="dybadge" style="background:${riskBg[d.risk]};color:${riskHex[d.risk]}">${d.risk}</span>
+    <div class="dyn" style="color:${riskHex[d.risk]||"#0f172a"}">${d.name}</div>
+    <div class="dyf">Díada ${d.type} · ${d.formula}</div>
+    <div class="dyt">${d.text}</div>
+  </div>`).join("");
+  document.getElementById("dyad-interp").innerHTML=D.dyadInterp;
+
+  /* Identidad */
+  document.getElementById("id-pregunta").innerHTML=`<div class="cbox-label">Pregunta Política del Territorio</div><div class="cbox-name" style="font-size:18px">"${D.preguntaPolitica}"</div><div class="cbox-text">${D.preguntaDesc}</div>`;
+  makeSem(D.govSemaforo,"gov-sem");
+  document.getElementById("partidos-tbl").innerHTML=D.partidos.map(p=>`<div style="display:grid;grid-template-columns:1.2fr 2fr 1fr 1fr;gap:.5rem;padding:8px 0;border-bottom:1px solid #bcbcbc;font-size:12px">
+    <div style="font-weight:700;color:var(--tx1)">${p.nombre}</div>
+    <div style="color:var(--tx2)">${p.emocion}</div>
+    <div style="color:var(--tx3)">${p.capital}</div>
+    <div style="color:${p.tendencia.includes("↓")?"#b91c1c":p.tendencia.includes("↑")?"#15803d":"#475569"};font-weight:700">${p.tendencia}</div>
+  </div>`).join("");
+
+  /* Actores */
+  document.getElementById("actores-grid").innerHTML=D.actores.map(a=>`<div class="ac">
+    <div class="ach" style="border-left:4px solid ${a.borderColor||"#3b82f6"}">
+      <div class="acn">${a.name}</div><div class="acr">${a.role}</div>
+    </div>
+    <div class="acb">${a.rows.map(([k,v])=>`<div class="acrow"><span class="ack">${k}</span><span class="acv">${v}</span></div>`).join("")}</div>
+  </div>`).join("");
+
+  /* Segmentos y Perfiles */
+  document.getElementById("seg-intro").textContent=D.segIntro;
+  const persuColor={"YA ES NUESTRO":{bg:"#15803d",tx:"#ffffff"},"MUY ALTA":{bg:"#1d4ed8",tx:"#ffffff"},"ALTA (con dolor propio)":{bg:"#854d0e",tx:"#ffffff"},"NULA":{bg:"#475569",tx:"#ffffff"}};
+  const probColors=["#b91c1c","#c2410c","#854d0e","#7e22ce","#0e7490"];
+  document.getElementById("seg-cards").innerHTML=D.segmentos.map(s=>{
+    const pc=persuColor[s.persuasibilidad]||{bg:"#475569",tx:"#ffffff"};
+    const tags=s.problemas.map((p,i)=>`<span class="segtag" style="background:${probColors[i%probColors.length]};color:#ffffff">${p}</span>`).join("");
+    return `<div class="segcard">
+      <div class="seghead" style="background:${s.color}">
+        <div class="segtipo">${s.tipo} · Buyer Persona Electoral</div>
+        <div class="segnombre">${s.nombre}</div>
+        <div class="segsub">${s.subtitulo}</div>
+        <div class="segmeta"><span class="segbadge">${s.peso}</span><span class="segbadge">Persuasibilidad: ${s.persuasibilidad}</span></div>
+      </div>
+      <div class="segquote" style="border-left-color:${s.color}">${s.frase}</div>
+      <div class="segbody">
+        <div class="segcol">
+          <div class="segcoltt">Perfil sociodemográfico</div>
+          <div class="segrow"><b>Edad y género</b>${s.perfil.edadGenero}</div>
+          <div class="segrow"><b>Zona</b>${s.perfil.zona}</div>
+          <div class="segrow"><b>Ocupación</b>${s.perfil.ocupacion}</div>
+          <div class="segrow"><b>Escolaridad e ingresos</b>${s.perfil.escolaridad}</div>
+          <div class="segrow"><b>Presencia digital</b>${s.perfil.digital}</div>
+          <div class="segrow"><b>Historia electoral</b>${s.perfil.historia}</div>
+        </div>
+        <div class="segcol">
+          <div class="segcoltt">Mundo emocional y tensiones</div>
+          <div class="segrow"><b>Emoción Plutchik</b>${s.emocional.emocion}</div>
+          <div class="segrow"><b>Vida cotidiana</b>${s.emocional.cotidiano}</div>
+          <div class="segrow"><b>Tensión social activa</b>${s.emocional.tension}</div>
+          <div class="segrow"><b>Dolor profundo</b>${s.emocional.dolor}</div>
+          <div class="segrow"><b>Miedo</b>${s.emocional.miedo}</div>
+          <div class="segrow"><b>Orgullo</b>${s.emocional.orgullo}</div>
+          <div class="segrow"><b>Narrativa maestra</b>${s.emocional.narrativa}</div>
+        </div>
+        <div class="segcol">
+          <div class="segcoltt">Problemáticas, orgullos y palancas</div>
+          <div class="segrow"><b>Problemas críticos</b><div class="segtags">${tags}</div></div>
+          <div class="segrow"><b>Orgullo comunitario</b>${s.orgulloComunitario}</div>
+          <div class="segrow"><b>Consumo digital</b>${s.consumoDigital}</div>
+          <div class="segrow"><b>Qué lo moviliza</b>${s.loQueLoMoviliza}</div>
+          <div class="segrow"><b>Qué lo aleja</b>${s.loQueLoAleja}</div>
+          <div class="segrow"><b>Frame cognitivo</b>${s.frameCognitivo}</div>
+          <div class="segrow"><b>Palanca</b>${s.palanca}</div>
+        </div>
+      </div>
+      <div class="segfoot">
+        <div class="segvec"><b>Vector:</b> ${s.vector.canal} · <b>Tono:</b> ${s.vector.tono} · <b>Formato:</b> ${s.vector.formato}</div>
+        <span class="segpersu" style="background:${pc.bg};color:${pc.tx}">${s.vector.inversion} inversión</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  /* CHARTS */
+  /* 1. Intensidades */
+  const acEm=D.emotions.filter(e=>e.active);
+  new Chart(document.getElementById("ch-intens"),{type:"bar",
+    data:{labels:acEm.map(e=>e.label),datasets:[{data:acEm.map(e=>e.intensity),backgroundColor:acEm.map(e=>e.color[2]),borderColor:acEm.map(e=>e.color[2]),borderWidth:1,borderRadius:5,borderSkipped:false}]},
+    options:{...CD,indexAxis:"y",plugins:{...CD.plugins,tooltip:{...CD.plugins.tooltip,callbacks:{label:c=>" "+["Inactiva","Baja","Media","Alta"][c.raw]}}},
+      scales:{x:{...CD.scales.x,min:0,max:3,ticks:{...CD.scales.x.ticks,stepSize:1,callback:v=>["○○○","●○○","●●○","●●●"][v]}},y:{...CD.scales.y}}}
+  });
+  /* 2. Temas */
+  new Chart(document.getElementById("ch-temas"),{type:"doughnut",
+    data:{labels:D.temasChart.map(t=>t[0]),datasets:[{data:D.temasChart.map(t=>t[1]),backgroundColor:D.temasChart.map(t=>t[2]),borderColor:"#d5d1d1",borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"right",labels:{color:"#1e293b",font:{size:11,weight:"600"},boxWidth:12,padding:10}},tooltip:{...CD.plugins.tooltip,callbacks:{label:c=>" "+c.label+": "+c.raw+"%"}}}}
+  });
+  /* 3. Díadas */
+  new Chart(document.getElementById("ch-diadas"),{type:"bar",
+    data:{labels:D.dyads.map(d=>d.name),datasets:[{label:"Score de riesgo",data:D.dyads.map(d=>d.score),backgroundColor:D.dyads.map(d=>riskHex[d.risk]),borderColor:D.dyads.map(d=>riskHex[d.risk]),borderWidth:1,borderRadius:6,borderSkipped:false}]},
+    options:{...CD,plugins:{...CD.plugins,legend:{display:false}},scales:{x:{...CD.scales.x},y:{...CD.scales.y,min:0,max:100,ticks:{...CD.scales.y.ticks,callback:v=>v+"/100"}}}}
+  });
+  /* 4. Partidos */
+  const pLabels=D.partidos.map(p=>p.nombre);
+  new Chart(document.getElementById("ch-partidos"),{type:"bar",
+    data:{labels:pLabels,datasets:[
+      {label:"Ira/Asco",data:D.partidosChart.map(x=>x[0]),backgroundColor:"#B91C1C",borderRadius:4,borderSkipped:false},
+      {label:"Decepción/Tristeza",data:D.partidosChart.map(x=>x[1]),backgroundColor:"#4C1D95",borderRadius:4,borderSkipped:false},
+      {label:"Interés disponible",data:D.partidosChart.map(x=>x[2]),backgroundColor:"#15803D",borderRadius:4,borderSkipped:false},
+    ]},
+    options:{...CD,plugins:{...CD.plugins,legend:{display:true,labels:{color:"#1e293b",font:{size:10,weight:"600"},boxWidth:10}}},
+      scales:{x:{...CD.scales.x},y:{...CD.scales.y,min:0,max:100,ticks:{...CD.scales.y.ticks,callback:v=>v+"%"}}}}
+  });
+  /* 5. Actores radar */
+  const radarLabels=["Legitimidad ciudadana","Presencia territorial","Capital positivo","Riesgo castigo","Cap. gestión","Credibilidad"];
+  new Chart(document.getElementById("ch-actores"),{type:"radar",
+    data:{labels:radarLabels,datasets:D.actoresRadar.labels.map((lbl,i)=>({label:lbl,data:D.actoresRadar.data[i],borderColor:D.actoresRadar.colors[i],backgroundColor:D.actoresRadar.colors[i]+"33",pointBackgroundColor:D.actoresRadar.colors[i],pointRadius:4}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{r:{ticks:{color:"#334155",font:{size:9,weight:"600"},stepSize:20},grid:{color:"rgba(0,0,0,.1)"},pointLabels:{color:"#0f172a",font:{size:10,weight:"700"}},angleLines:{color:"rgba(0,0,0,.1)"},min:0,max:100}},
+      plugins:{legend:{display:true,labels:{color:"#1e293b",font:{size:11,weight:"600"},boxWidth:10}},tooltip:{...CD.plugins.tooltip}}}
+  });
+}
+
+init();
+</script>
+</body>
+</html>

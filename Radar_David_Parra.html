@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RADAR - David Parra Sánchez</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--navy:#1C2738;--ac:#00C2D4;--go:#F4C430;--da:#E63946;--su:#2EC4B6;--ne:#8FA3B1;--bl:#1B4F8A;--card:#d5d1d1;--border:rgba(0,0,0,0.1)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#ffffff;color:#1e293b;font-family:system-ui,sans-serif;min-height:100vh}
+
+/* Ocultar tarjetas de KPIs / Métricas numéricas puntuales sin alterar la estructura */
+.hm, .kpi-hide {
+  display: none !important;
+}
+
+/* Header */
+.hdr{padding:14px 24px;position:sticky;top:0;background:var(--navy);backdrop-filter:blur(12px);z-index:100;display:flex;justify-content:space-between;align-items:center;color:#fff}
+.hdr-text{font-family:monospace;font-size:11px;color:#94A3B8;line-height:1.4;letter-spacing:1px}
+.hdr-text strong{color:#fff}
+
+.con{max-width:1300px;margin:0 auto;padding:0 20px}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:2px solid #e2e8f0;overflow-x:auto;scrollbar-width:none;margin-top:20px;margin-bottom:24px}
+.tb{font-family:monospace;font-size:10px;padding:12px 16px;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;transition:all .2s;font-weight:700;letter-spacing:1px}
+.tb:hover{color:var(--navy)}
+.tb.act{color:var(--navy);border-bottom-color:var(--navy)}
+
+.tsec{display:none}
+.tsec.show{display:block;animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.stitle{font-family:monospace;font-size:11px;font-weight:700;color:var(--navy);letter-spacing:3px;margin-bottom:14px;display:flex;align-items:center;gap:10px;margin-top:10px}
+.stitle::after{content:'';flex:1;height:1px;background:#cbd5e1}
+
+/* Contenedores / Tarjetas */
+.cg{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px}
+@media(max-width:768px){.cg{grid-template-columns:1fr}}
+
+.card{background:var(--card);border-radius:6px;padding:18px;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.ct{font-size:13px;font-weight:700;margin-bottom:3px;color:#0f172a}
+.cs{font-size:10px;color:#475569;margin-bottom:14px}
+
+.bbar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.blbl{font-family:monospace;font-size:9px;color:var(--navy);letter-spacing:1px;font-weight:700}
+.bb{font-family:monospace;font-size:8px;padding:5px 11px;border-radius:3px;cursor:pointer;border:1px solid #cbd5e1;background:#fff;color:#475569;letter-spacing:1px;transition:all .15s;font-weight:600}
+.bb:hover{border-color:var(--navy);color:var(--navy)}
+.bb.act{background:var(--navy);border-color:var(--navy);color:#fff}
+
+.ng{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:900px){.ng{grid-template-columns:1fr}}
+.nc{background:var(--card);border-radius:6px;overflow:hidden;color:#0f172a}
+.nh{padding:10px 13px;font-family:monospace;font-size:9px;font-weight:700;letter-spacing:2px}
+.nh.fav{background:rgba(46,196,182,.25);color:#064e3b}
+.nh.crit{background:rgba(230,57,70,.25);color:#7f1d1d}
+.nh.neu{background:rgba(143,163,177,.25);color:#1e293b}
+.ni{padding:11px 13px;border-bottom:1px solid rgba(0,0,0,.06)}
+.ni:last-child{border-bottom:none}
+.nit{font-size:12px;font-weight:600;margin-bottom:3px}
+.nd{font-size:10px;color:#334155;line-height:1.4}
+
+.btag{display:inline-block;font-family:monospace;font-size:7px;padding:2px 6px;border-radius:2px;margin-top:4px;font-weight:700}
+.bgen{background:rgba(0,194,212,.15);color:#0891b2}
+.bage{background:rgba(244,196,48,.2);color:#854d0e}
+.bpar{background:rgba(46,196,182,.2);color:#047857}
+.bloc{background:rgba(27,79,138,.15);color:#1d4ed8}
+.bsrc{background:rgba(230,57,70,.15);color:#b91c1c}
+
+.bi{background:rgba(255,255,255,.6);border-left:3px solid var(--navy);padding:6px 9px;font-size:9px;color:#334155;line-height:1.5;margin-top:7px;border-radius:0 3px 3px 0}
+.bi strong{color:#0f172a}
+.bi.neg{border-left-color:var(--da)}
+.bi.neg strong{color:var(--da)}
+.bi.ntr{border-left-color:var(--ne)}
+
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+@media(max-width:768px){.mg{grid-template-columns:1fr}}
+.mh{padding:10px 14px;font-family:monospace;font-size:9px;font-weight:700;letter-spacing:2px;border-radius:4px 4px 0 0}
+.mh.risk{background:rgba(230,57,70,.2);color:#7f1d1d}
+.mh.opp{background:rgba(46,196,182,.2);color:#064e3b}
+.mb{background:var(--card);border-radius:0 0 4px 4px}
+.mr{padding:11px 13px;border-bottom:1px solid rgba(0,0,0,.06)}
+.mr:last-child{border-bottom:none}
+.mt{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.lv{font-family:monospace;font-size:7px;font-weight:700;padding:3px 7px;border-radius:2px;min-width:50px;text-align:center}
+.lc{background:#E63946;color:#fff}.la{background:#E67E22;color:#fff}.lm{background:#F4C430;color:#0D1B2A}
+.mn{font-size:12px;font-weight:600}
+.md{font-size:10px;color:#334155;line-height:1.5;margin-bottom:5px}
+
+.cloud{padding:22px 10px;text-align:center;line-height:2.1}
+.cloud span{margin:4px 8px;display:inline-block}
+
+.htbl{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:14px}
+.htbl th{text-align:left;font-family:monospace;font-size:8px;letter-spacing:1px;color:var(--navy);padding:8px 10px;border-bottom:1px solid #94a3b8}
+.htbl td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,.05);color:#1e293b}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+.ib{font-size:11px;color:#334155;line-height:1.5}
+.ic{background:var(--card);border-radius:4px;padding:13px}
+.ic.ac{border-left:3px solid var(--ac)}.ic.go{border-left:3px solid var(--go)}.ic.su{border-left:3px solid var(--su)}.ic.bl{border-left:3px solid #1B4F8A}.ic.da{border-left:3px solid var(--da)}
+.ih{font-size:11px;font-weight:700;margin-bottom:5px;color:#0f172a}
+.im{font-size:10px;color:var(--navy);margin-top:5px;font-weight:600}
+.ig{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:24px}
+@media(max-width:768px){.ig{grid-template-columns:1fr}}
+
+.footer{background:#1C2738;border-top:1px solid rgba(255,255,255,.1);padding:14px 24px;font-size:11px;color:#94A3B8;display:flex;flex-wrap:wrap;gap:8px;margin-top:40px;border-radius:0 0 8px 8px}
+
+canvas{max-height:200px}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-text">
+    // INTELIGENCIA POLÍTICO-DIGITAL  · ANÁLISIS BIVARIADO · ESTUDIO EJECUTIVO<br>
+    <strong>DAVID PARRA SÁNCHEZ</strong><br>
+    Aspirante a Presidente Municipal · Naucalpan de Juárez, Edoméx · PAN (proceso interno) · exPRI/exSUTEyM · 3 Jul – 3 Sep 2026, 🟡 ALERTA AMARILLA · BIVARIADO ACTIVO · SEP 2026<br>
+    PARRA SÁNCHEZ · NAUCALPAN DE JUÁREZ
+  </div>
+</header>
+
+<main class="con">
+
+  <div class="tabs">
+    <button class="tb act" onclick="tab(this,'sent')">SENTIMIENTO</button>
+    <button class="tb" onclick="tab(this,'tom')">TOP OF MIND</button>
+    <button class="tb" onclick="tab(this,'hash')">NUBE Y HASHTAGS</button>
+    <button class="tb" onclick="tab(this,'plat')">PLATAFORMAS</button>
+    <button class="tb" onclick="tab(this,'nar')">NARRATIVAS</button>
+    <button class="tb" onclick="tab(this,'risk')">RIESGOS &amp; OPORT.</button>
+    <button class="tb" onclick="tab(this,'ter')">MAPA TERRITORIAL</button>
+  </div>
+
+  <!-- SENTIMIENTO -->
+  <div class="tsec show" id="tab-sent">
+    <div class="stitle">SENTIMIENTO DIGITAL — ANÁLISIS BIVARIADO</div>
+    <div class="bbar">
+      <span class="blbl">CRUZAR POR →</span>
+      <button class="bb act" onclick="updSent(this,'general')">GENERAL</button>
+      <button class="bb" onclick="updSent(this,'genero')">GÉNERO</button>
+      <button class="bb" onclick="updSent(this,'edad')">EDAD</button>
+      <button class="bb" onclick="updSent(this,'partido')">PARTIDO</button>
+    </div>
+    <div class="cg">
+      <div class="card"><div class="ct" id="sent-t">Sentimiento General</div><div class="cs" id="sent-s">Clasificación semántica del periodo</div><canvas id="c-sent"></canvas></div>
+      <div class="card"><div class="ct">Clima Digital por Segmento</div><div class="cs" id="sent-cs">Temperatura percibida</div><canvas id="c-clima"></canvas></div>
+    </div>
+    <div class="stitle">HALLAZGOS BIVARIADOS</div>
+    <div class="ig">
+      <div class="ic ac"><div class="ih">GÉNERO × SENTIMIENTO</div><div class="ib">Las <strong>mujeres</strong> registran menor conocimiento de su trayectoria de gestoría social y mayor peso relativo del señalamiento histórico de nepotismo sindical.</div><div class="im">→ Activar vocería femenina desde Proyecto Social Naucalpan, no desde el flanco sindical.</div></div>
+      <div class="ic go"><div class="ih">PARTIDO × SENTIMIENTO</div><div class="ib">El sentimiento favorable proviene de la base histórica del PAN y del bloque priista que migró con él. Entre simpatizantes de Morena domina el escepticismo.</div><div class="im">→ No ha logrado permear más allá de su base de origen; el electorado de Morena lo percibe como "operador reciclado".</div></div>
+      <div class="ic su"><div class="ih">EDAD × SENTIMIENTO</div><div class="ib"><strong>45–59 años:</strong> segmento más favorable, su base sindical histórica. <strong>18–29:</strong> el más crítico/indiferente, sin arraigo digital construido.</div><div class="im">→ Hay una generación sin conversión: 18–29 casi no aparece en la muestra de menciones propias.</div></div>
+      <div class="ic bl"><div class="ih">TERRITORIO × SENTIMIENTO</div><div class="ib"><strong>Colonias con respaldo Copacis</strong> (Tepatlaxco, Chimalpa, Lomas Verdes, Izcalli Chamapa) muestran apoyo. <strong>Bastiones morenistas del gobierno en turno:</strong> clima adverso.</div><div class="im">→ El apoyo está territorialmente concentrado en estructura vecinal y sindical, no es aún un fenómeno de opinión general.</div></div>
+    </div>
+  </div>
+
+  <!-- TOP OF MIND -->
+  <div class="tsec" id="tab-tom">
+    <div class="stitle">TOP OF MIND — ANÁLISIS BIVARIADO</div>
+    <div class="bbar">
+      <span class="blbl">CRUZAR POR →</span>
+      <button class="bb act" onclick="updTom(this,'general')">GENERAL</button>
+      <button class="bb" onclick="updTom(this,'genero')">GÉNERO</button>
+      <button class="bb" onclick="updTom(this,'edad')">EDAD</button>
+      <button class="bb" onclick="updTom(this,'partido')">PARTIDO</button>
+    </div>
+    <div class="card" style="margin-bottom:18px"><div class="ct" id="tom-t">Top de Temas — General</div><div class="cs" id="tom-s">¿Qué domina la conversación pública sobre Parra?</div><canvas id="c-tom" style="max-height:230px"></canvas></div>
+    <div class="stitle">CRUCES TEMÁTICOS</div>
+    <div class="ig">
+      <div class="ic ac"><div class="ih">GÉNERO × TEMA</div><div class="ib"><strong>Hombres:</strong> trayectoria política/sindical y encuestas internas<br><strong>Mujeres:</strong> Proyecto Social Naucalpan / gestoría comunitaria y respaldo de Copacis</div><div class="im">→ Dos entradas narrativas distintas: "operador con poder" vs. "gestor social cercano".</div></div>
+      <div class="ic go"><div class="ih">EDAD × TEMA</div><div class="ib"><strong>45–59:</strong> pasado sindical y encuestas<br><strong>18–29:</strong> conversación mínima; cuando aparece, es sobre el cambio de partido, sin contexto histórico</div><div class="im">→ El pasado sindical no genera memoria en el electorado joven: oportunidad de resetear narrativa con ese segmento.</div></div>
+      <div class="ic da"><div class="ih">PARTIDO × TEMA</div><div class="ib"><strong>Base priista en tránsito:</strong> narrativa de "traición"/lealtad<br><strong>Simpatizantes Morena:</strong> presunta cercanía con el alcalde en turno</div><div class="im">→ La fractura no es sobre el actor, es sobre la lectura de su movimiento partidista.</div></div>
+      <div class="ic bl"><div class="ih">TERRITORIO × TEMA</div><div class="ib"><strong>Colonias populares/periferia:</strong> respaldo social y trabajo territorial<br><strong>"Corredor Azul" panista:</strong> disputa interna con Belgodere/Ruiz/Oropeza</div><div class="im">→ La conversación cambia de fondo según si se está dentro o fuera de la disputa interna del PAN.</div></div>
+    </div>
+  </div>
+
+  <!-- NUBE Y HASHTAGS -->
+  <div class="tsec" id="tab-hash">
+    <div class="stitle">NUBE DE PALABRAS DEL ACTOR</div>
+    <div class="card">
+      <div class="cloud" id="wordcloud"></div>
+    </div>
+    <p style="font-size:11px;color:#334155;line-height:1.7;margin:14px 0 26px">Domina un campo semántico dual: por un lado, el propio ("candidato ciudadano", "Proyecto Social Naucalpan", "trabajo territorial", "apertura"), que Parra ha logrado instalar con relativo éxito; por el otro, el impuesto por la coyuntura y sus críticos ("exdiputado", "exSUTEyM", "aviadores", "clan Parra", "cuadro reciclado"), que compite de cerca en volumen. El actor todavía no controla mayoritariamente su propio relato.</p>
+
+    <div class="stitle">ANÁLISIS DE HASHTAGS</div>
+    <div class="card">
+      <canvas id="c-hash" style="max-height:280px"></canvas>
+      <table class="htbl">
+        <tr><th>Hashtag</th><th>Tono</th><th>Plataforma dominante</th><th>Origen</th></tr>
+        <tr><td>#DavidParra</td><td><span class="dot" style="background:var(--su)"></span>Positivo</td><td>Facebook</td><td>Orgánico</td></tr>
+        <tr><td>#CandidatoCiudadano</td><td><span class="dot" style="background:var(--su)"></span>Positivo</td><td>Facebook</td><td>Orgánico (campaña propia)</td></tr>
+        <tr><td>#NaucalpanPAN</td><td><span class="dot" style="background:var(--ne)"></span>Neutro</td><td>Medios digitales</td><td>Orgánico</td></tr>
+        <tr><td>#ProyectoSocialNaucalpan</td><td><span class="dot" style="background:var(--su)"></span>Positivo</td><td>Facebook</td><td>Orgánico</td></tr>
+        <tr><td>#DefensorDeLaPatria</td><td><span class="dot" style="background:var(--ne)"></span>Neutro</td><td>Medios digitales</td><td>Institucional (proceso PAN)</td></tr>
+        <tr><td>#CorredorAzul</td><td><span class="dot" style="background:var(--ne)"></span>Neutro</td><td>Medios digitales</td><td>Editorial</td></tr>
+        <tr><td>#Naucalpan2027</td><td><span class="dot" style="background:var(--go)"></span>Polarizado</td><td>Facebook / medios</td><td>Orgánico</td></tr>
+        <tr><td>#ExPriista</td><td><span class="dot" style="background:var(--da)"></span>Negativo</td><td>Medios digitales</td><td>Editorial / adversarios internos PAN</td></tr>
+        <tr><td>#ClanParra</td><td><span class="dot" style="background:var(--da)"></span>Negativo</td><td>Medios digitales / archivo</td><td>Narrativa histórica reactivada</td></tr>
+        <tr><td>#Aviadores</td><td><span class="dot" style="background:var(--da)"></span>Negativo</td><td>Medios digitales</td><td>Narrativa histórica latente</td></tr>
+        <tr><td>#CuadroReciclado</td><td><span class="dot" style="background:var(--da)"></span>Negativo</td><td>Columnas de opinión</td><td>Editorial crítico</td></tr>
+      </table>
+    </div>
+    <p style="font-size:11px;color:#334155;line-height:1.7;margin:14px 0 6px">El hashtag que mejor resume la conversación del periodo es <strong>#CandidatoCiudadano</strong>: condensa tanto la apuesta discursiva del propio Parra como el escepticismo de sus críticos.</p>
+  </div>
+
+  <!-- PLATAFORMAS -->
+  <div class="tsec" id="tab-plat">
+    <div class="stitle">PLATAFORMAS — ANÁLISIS BIVARIADO</div>
+    <div class="cg">
+      <div class="card"><div class="ct">Alcance por Plataforma</div><div class="cs">Peso relativo de cada canal</div><canvas id="c-plalc"></canvas></div>
+      <div class="card"><div class="ct">Tono por Plataforma</div><div class="cs">¿Dónde es más alta la crítica?</div><canvas id="c-pltono"></canvas></div>
+      <div class="card"><div class="ct">Plataforma × Edad</div><div class="cs">¿Dónde está cada generación?</div><canvas id="c-pledad"></canvas></div>
+      <div class="card"><div class="ct">Velocidad de Réplica (horas a cobertura estatal)</div><div class="cs">Crítica editorial vs. contenido propio</div><canvas id="c-plviral"></canvas></div>
+    </div>
+    <div class="stitle">LECTURA ESTRATÉGICA</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px">
+      <div class="card"><div class="ct" style="font-size:12px;color:var(--navy);margin-bottom:4px">Facebook · Alcance Primario · 45+</div><div class="ib">Canal primario y de <strong>legitimidad territorial</strong>. Página con presencia e interacciones activas.</div></div>
+      <div class="card"><div class="ct" style="font-size:12px;color:var(--navy);margin-bottom:4px">Medios digitales locales · Cobertura Editorial</div><div class="ib">Aquí se instaló tanto la narrativa favorable como la crítica. Canal de mayor riesgo reputacional.</div></div>
+      <div class="card"><div class="ct" style="font-size:12px;color:var(--da);margin-bottom:4px">X/Twitter · Baja Presencia · BRECHA CRÍTICA</div><div class="ib">Cuenta con baja densidad de seguidores e inactiva. Vacío estratégico frente a la prensa.</div></div>
+    </div>
+  </div>
+
+  <!-- NARRATIVAS -->
+  <div class="tsec" id="tab-nar">
+    <div class="stitle">ANÁLISIS BIVARIADO DE NARRATIVAS</div>
+    <div class="ng">
+      <div class="nc">
+        <div class="nh fav">▲ NARRATIVAS FAVORABLES</div>
+        <div class="ni"><div class="nit">"Candidato ciudadano" / renovación con experiencia</div><div class="nd">Discurso central desde su registro en el PAN.</div><span class="btag bgen">♂/♀ 45+</span><span class="btag bpar">Base PAN histórica</span><div class="bi"><strong>Bivariado:</strong> mayor eco en adultos 45+ y militancia panista tradicional.</div></div>
+        <div class="ni"><div class="nit">Liderazgo en mediciones internas del PAN</div><div class="nd">Encuestas internas lo ubican al frente de las preferencias.</div><span class="btag bpar">Base PAN</span><div class="bi"><strong>Bivariado:</strong> narrativa validada sobre todo por medios que cubren la contienda interna.</div></div>
+        <div class="ni"><div class="nit">Respaldo multi-colonia de Copacis</div><div class="nd">Consejos de Participación Ciudadana refrendaron su apoyo.</div><span class="btag bloc">Colonias populares</span><span class="btag bgen">♀ gestoría social</span><div class="bi"><strong>Bivariado:</strong> fuerte en estructura vecinal organizada.</div></div>
+      </div>
+      <div class="nc">
+        <div class="nh crit">▼ NARRATIVAS CRÍTICAS</div>
+        <div class="ni"><div class="nit" style="color:var(--da)">⚠ "Cuadro reciclado" del viejo PRI</div><div class="nd">Medios críticos cuestionan incorporación en el PAN.</div><span class="btag bsrc">Medios digitales</span><span class="btag bpar">Militancia PAN</span><div class="bi neg"><strong>Bivariado:</strong> instalada por columnistas; puede ser capitalizada por rivales.</div></div>
+        <div class="ni"><div class="nit">Legado de nepotismo/aviadores en el SUTEyM</div><div class="nd">Señalamientos históricos sobre el control sindical.</div><span class="btag bsrc">Archivo</span><span class="btag bage">Independientes / 18-29</span><div class="bi neg"><strong>Bivariado:</strong> mayor daño potencial entre independientes y jóvenes.</div></div>
+        <div class="ni"><div class="nit">Presunta cercanía con el alcalde morenista</div><div class="nd">Columnas de opinión sostienen alianza tácita.</div><span class="btag bsrc">Opinión</span><span class="btag bpar">Simpatizantes Morena</span><div class="bi neg"><strong>Bivariado:</strong> narrativa de baja circulación pero alta carga polarizante.</div></div>
+      </div>
+      <div class="nc">
+        <div class="nh neu">◆ NARRATIVAS NEUTRAS</div>
+        <div class="ni"><div class="nit">Proceso interno del PAN sin resolución formal</div><div class="nd">Cobertura fáctica de la contienda con aspirantes locales.</div><span class="btag bpar">Transversal</span><div class="bi ntr"><strong>Bivariado:</strong> bajo impacto emocional.</div></div>
+        <div class="ni"><div class="nit">Trayectoria como exdiputado local</div><div class="nd">Antecedente mencionado como credencial de experiencia.</div><span class="btag bage">45+</span><div class="bi ntr"><strong>Bivariado:</strong> reforzador de credibilidad entre su base.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIESGOS -->
+  <div class="tsec" id="tab-risk">
+    <div class="stitle">MATRIZ BIVARIADA DE RIESGOS Y OPORTUNIDADES</div>
+    <div class="mg">
+      <div>
+        <div class="mh risk">⚠ RIESGOS — IMPACTO POR SEGMENTO</div>
+        <div class="mb">
+          <div class="mr"><div class="mt"><span class="lv la">ALTO</span><span class="mn">Reactivación del expediente de nepotismo/aviadores SUTEyM</span></div><div class="md">Narrativa histórica documentada; reactivable en campaña.</div><div class="bi neg"><strong>Bivariado:</strong> pega más fuerte en independientes y simpatizantes de Morena.</div></div>
+          <div class="mr"><div class="mt"><span class="lv la">ALTO</span><span class="mn">Contradicción "PAN anticorrupción integra a cuadro priista"</span></div><div class="md">Instalada por columnas de opinión.</div><div class="bi neg"><strong>Bivariado:</strong> más dañina entre columnistas y militancia panista tradicional.</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="mh opp">✦ OPORTUNIDADES — POTENCIAL POR SEGMENTO</div>
+        <div class="mb">
+          <div class="mr"><div class="mt"><span class="lv" style="background:var(--su);color:#fff">ALTO</span><span class="mn">Liderazgo sostenido en mediciones internas del PAN</span></div><div class="md">Ventaja en posicionamiento frente a aspirantes internos.</div><div class="bi"><strong>Bivariado:</strong> consolidado en base priista migrante y militancia panista.</div></div>
+          <div class="mr"><div class="mt"><span class="lv" style="background:var(--su);color:#fff">ALTO</span><span class="mn">Estructura vecinal organizada (Copacis multi-colonia)</span></div><div class="md">Respaldo formal de consejos en múltiples colonias.</div><div class="bi"><strong>Bivariado:</strong> fuerte en colonias populares y periferia.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TERRITORIAL -->
+  <div class="tsec" id="tab-ter">
+    <div class="stitle">MAPA DE CALOR TERRITORIAL — TENDENCIA POR ZONA</div>
+    <div class="hm">
+      <div class="hz fav"><div class="hzn">Tepatlaxco</div><div class="hzl">🟢 FAVORABLE</div></div>
+      <div class="hz fav"><div class="hzn">Chimalpa</div><div class="hzl">🟢 FAVORABLE</div></div>
+      <div class="hz fav"><div class="hzn">Izcalli Chamapa</div><div class="hzl">🟢 FAVORABLE</div></div>
+      <div class="hz ine"><div class="hzn">Lomas Verdes</div><div class="hzl">🟡 INERCIAL-FAV</div></div>
+      <div class="hz ine"><div class="hzn">"Corredor Azul" panista</div><div class="hzl">🟡 INERCIAL</div></div>
+      <div class="hz ine"><div class="hzn">Zona burocrática SUTEyM</div><div class="hzl">🟡 INERCIAL-ADV</div></div>
+      <div class="hz adv"><div class="hzn">Bastiones de gobierno en turno</div><div class="hzl">🔴 ADVERSA</div></div>
+      <div class="hz adv"><div class="hzn">Centro / zona de negocios</div><div class="hzl">🔴 ADVERSA-LEVE</div></div>
+    </div>
+    <div class="cg">
+      <div class="card"><div class="ct">Sentimiento Relativo por Zona</div><div class="cs">Aprobación cualitativa por zona/estructura</div><canvas id="c-ternps"></canvas></div>
+      <div class="card"><div class="ct">Volumen de Conversación por Zona</div><div class="cs">Proporción de menciones del periodo</div><canvas id="c-tervol"></canvas></div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  RADAR v2.0 · ANÁLISIS BIVARIADO · SISTEMA DE INTELIGENCIA POLÍTICO-DIGITAL · ESTUDIO CONFIDENCIAL · NAUCALPAN DE JUÁREZ · SEP 2026
+</footer>
+
+<script>
+const C={ac:'#00C2D4',go:'#F4C430',da:'#E63946',su:'#2EC4B6',ne:'#8FA3B1',bl:'#1B4F8A'};
+Chart.defaults.color='#334155';
+Chart.defaults.font.family='system-ui,sans-serif';
+
+function tab(btn,id){
+  document.querySelectorAll('.tsec').forEach(s=>s.classList.remove('show'));
+  document.querySelectorAll('.tb').forEach(t=>t.classList.remove('act'));
+  document.getElementById('tab-'+id).classList.add('show');
+  btn.classList.add('act');
+  setTimeout(()=>rCharts(id),60);
+}
+
+const CH={};
+function mk(id,cfg){if(CH[id])CH[id].destroy();const c=document.getElementById(id);if(!c)return;CH[id]=new Chart(c,cfg)}
+
+let sC=null,clC=null;
+const SENT={
+  general:{l:['Positivo','Neutro','Negativo','Polarizado'],d:[30,38,20,12],c:[C.su,C.ne,C.da,C.go],t:'doughnut'},
+  genero:{l:['H Pos','H Neu','H Neg','M Pos','M Neu','M Neg'],d:[36,34,18,24,40,24],c:[C.su,C.ne,C.da,'rgba(46,196,182,.5)','rgba(143,163,177,.5)','rgba(230,57,70,.6)'],t:'bar'},
+  edad:{l:['18-29','30-44','45-59','60+'],d:[-13,4,22,16],c:[C.da,C.go,C.su,C.su],t:'bar'},
+  partido:{l:['Base PAN','Priista tránsito','Independ.','Simp. Morena'],d:[24,6,-4,-22],c:[C.su,C.go,C.ne,C.da],t:'bar'}
+};
+const CLIMA={
+  general:{l:['Favorable','Mixto','Adverso','Inercial'],d:[28,40,18,14],c:[C.su,C.go,C.da,C.ne]},
+  genero:{l:['Hombres','Mujeres'],d:[34,20],c:[C.su,C.da]},
+  edad:{l:['18-29','30-44','45-59','60+'],d:[10,22,38,30],c:[C.da,C.go,C.su,C.su]},
+  partido:{l:['PAN','Independ.','Morena'],d:[46,14,6],c:[C.su,C.go,C.da]}
+};
+
+function rSent(k){
+  if(sC)sC.destroy();if(clC)clC.destroy();
+  const d=SENT[k];const c1=document.getElementById('c-sent');const c2=document.getElementById('c-clima');if(!c1||!c2)return;
+  const isBar=d.t==='bar';
+  sC=new Chart(c1,{
+    type:d.t,
+    data:{labels:d.l,datasets:[{data:d.d,backgroundColor:d.c,borderWidth:0,borderRadius:isBar?2:0}]},
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:8}}},
+      cutout:isBar?undefined:'55%',
+      scales:isBar?{
+        y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},
+        x:{grid:{display:false},ticks:{font:{size:9}}}
+      }:undefined
+    }
+  });
+  const cd=CLIMA[k];
+  clC=new Chart(c2,{
+    type:'doughnut',
+    data:{labels:cd.l,datasets:[{data:cd.d,backgroundColor:cd.c,borderWidth:0}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:8}}},cutout:'55%'}
+  });
+}
+
+function updSent(btn,k){
+  document.querySelectorAll('#tab-sent .bb').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  const t={general:'Sentimiento General',genero:'Sentimiento por Género',edad:'Tendencia por Edad',partido:'Tendencia por Partido'};
+  document.getElementById('sent-t').textContent=t[k];
+  rSent(k);
+}
+
+let tomC=null;
+const TOM={
+  general:{l:['Salto PRI→PAN / candidato ciudadano','Encuestas internas liderando','Pasado sindical SUTEyM','Respaldo Copacis / PSN','Relación con alcalde en turno'],d:[35,22,20,15,8],c:[C.bl,C.su,C.da,C.su,C.go]},
+  genero:{l:['Trayectoria política/sindical','Encuestas internas','Proyecto Social Naucalpan','Respaldo Copacis'],h:[44,26,16,14],m:[18,16,38,28]},
+  edad:{l:['Pasado sindical','Encuestas','Cambio de partido','PSN/gestoría'],g:['18-29','30-44','45-59','60+'],d:[[4,18,32,26],[6,24,30,20],[52,30,10,8],[10,18,20,22]]},
+  partido:{l:['"Traición"/lealtad al PRI','Cercanía con alcalde Morena','Candidato ciudadano','Encuestas internas'],base:[8,4,44,32],fsai:[38,6,10,6],indep:[10,31,22,14]}
+};
+
+function rTom(k){
+  if(tomC)tomC.destroy();const c=document.getElementById('c-tom');if(!c)return;
+  if(k==='general'){
+    tomC=new Chart(c,{
+      type:'bar',
+      data:{labels:TOM.general.l,datasets:[{data:TOM.general.d,backgroundColor:TOM.general.c,borderRadius:2,borderWidth:0}]},
+      options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},y:{grid:{display:false},ticks:{font:{size:10}}}}}
+    });
+  } else if(k==='genero'){
+    tomC=new Chart(c,{
+      type:'bar',
+      data:{labels:TOM.genero.l,datasets:[{label:'Hombres',data:TOM.genero.h,backgroundColor:C.bl,borderRadius:2},{label:'Mujeres',data:TOM.genero.m,backgroundColor:'rgba(230,57,70,.7)',borderRadius:2}]},
+      options:{indexAxis:'y',responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},y:{grid:{display:false},ticks:{font:{size:9}}}}}
+    });
+  } else if(k==='edad'){
+    const d=TOM.edad;
+    tomC=new Chart(c,{
+      type:'bar',
+      data:{labels:d.g,datasets:d.l.map((l,i)=>({label:l,data:d.d[i],backgroundColor:[C.su,C.ac,C.go,C.da][i],borderRadius:2}))},
+      options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},x:{grid:{display:false},ticks:{font:{size:9}}}}}
+    });
+  } else {
+    const d=TOM.partido;
+    tomC=new Chart(c,{
+      type:'bar',
+      data:{labels:d.l,datasets:[{label:'Base PAN',data:d.base,backgroundColor:C.su,borderRadius:2},{label:'Priista en tránsito',data:d.fsai,backgroundColor:C.go,borderRadius:2},{label:'Independientes',data:d.indep,backgroundColor:C.da,borderRadius:2}]},
+      options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},x:{grid:{display:false},ticks:{font:{size:9}}}}}
+    });
+  }
+}
+
+function updTom(btn,k){
+  document.querySelectorAll('#tab-tom .bb').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  const t={general:'Top de Temas — General',genero:'Top of Mind por Género',edad:'Top of Mind por Edad',partido:'Top of Mind por Partido'};
+  document.getElementById('tom-t').textContent=t[k];
+  rTom(k);
+}
+
+function rPlat(){
+  mk('c-plalc',{type:'doughnut',data:{labels:['Facebook','Medios digitales','WhatsApp','X/Twitter','TikTok/Instagram'],datasets:[{data:[68,22,6,3,1],backgroundColor:[C.ac,C.bl,C.go,C.da,C.ne],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:8}}},cutout:'55%'}});
+  mk('c-pltono',{type:'bar',data:{labels:['Facebook','Medios digitales','WhatsApp','X/Twitter'],datasets:[{label:'Positivo',data:[44,30,40,20],backgroundColor:C.su,borderRadius:2},{label:'Negativo',data:[18,32,15,45],backgroundColor:C.da,borderRadius:2}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},x:{grid:{display:false},ticks:{font:{size:9}}}}}});
+  mk('c-pledad',{type:'bar',data:{labels:['Facebook','Medios digitales','WhatsApp','X/Twitter'],datasets:[{label:'18-29',data:[10,14,12,20],backgroundColor:'rgba(230,57,70,.7)',borderRadius:2},{label:'30-44',data:[24,28,26,30],backgroundColor:C.go,borderRadius:2},{label:'45-59',data:[42,38,36,32],backgroundColor:C.su,borderRadius:2},{label:'60+',data:[24,20,26,18],backgroundColor:C.ne,borderRadius:2}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},x:{grid:{display:false},ticks:{font:{size:9}}}}}});
+  mk('c-plviral',{type:'bar',data:{labels:['Medios digitales (crítica)','Medios digitales (propia)','Facebook (crítica)','Facebook (propia)'],datasets:[{label:'Velocidad de réplica',data:[12,30,20,18],backgroundColor:[C.da,C.su,C.da,C.su],borderRadius:2}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},y:{grid:{display:false},ticks:{font:{size:9}}}}}});
+}
+
+function rTer(){
+  mk('c-ternps',{type:'bar',data:{labels:['Tepatlaxco','Chimalpa','Izcalli Chamapa','Lomas Verdes','Corredor Azul','Zona SUTEyM','Centro/negocios','Bastión gob. turno'],datasets:[{data:[31,27,22,9,4,-3,-8,-19],backgroundColor:d=>d.raw>15?C.su:d.raw>0?C.go:d.raw>-10?C.da:'#AA0000',borderRadius:2,borderWidth:0}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},y:{grid:{display:false},ticks:{font:{size:9}}}}}});
+  mk('c-tervol',{type:'bar',data:{labels:['Zona SUTEyM','Corredor Azul','Tepatlaxco','Chimalpa','Bastión gob. turno','Izcalli Chamapa','Centro/negocios','Lomas Verdes'],datasets:[{data:[24,20,16,14,10,8,5,3],backgroundColor:[C.go,C.go,C.su,C.su,C.da,C.su,C.da,C.su],borderRadius:2,borderWidth:0}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},y:{grid:{display:false},ticks:{font:{size:9}}}}}});
+}
+
+function rHash(){
+  mk('c-hash',{type:'bar',data:{labels:['#DavidParra','#CandidatoCiudadano','#Naucalpan2027','#NaucalpanPAN','#ProyectoSocialNaucalpan','#DefensorDeLaPatria','#CorredorAzul','#ExPriista','#ClanParra','#Aviadores','#CuadroReciclado'],datasets:[{data:[100,86,74,68,61,52,44,38,33,29,24],backgroundColor:[C.su,C.su,C.go,C.ne,C.su,C.ne,C.ne,C.da,C.da,C.da,C.da],borderRadius:2,borderWidth:0}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{display:false}},y:{grid:{display:false},ticks:{font:{size:9}}}}}});
+}
+
+function buildCloud(){
+  const words=[
+    {w:'candidato ciudadano',s:38,c:C.su},{w:'PAN',s:34,c:C.ne},{w:'Naucalpan',s:36,c:C.ne},
+    {w:'presidencia municipal',s:30,c:C.ne},{w:'2027',s:28,c:C.ne},{w:'Proyecto Social Naucalpan',s:30,c:C.su},
+    {w:'SUTEyM',s:26,c:C.go},{w:'sindicato',s:24,c:C.go},{w:'líder moral',s:22,c:C.go},
+    {w:'exdiputado',s:22,c:C.ne},{w:'exPRI',s:24,c:C.go},{w:'renuncia',s:20,c:C.ne},
+    {w:'coordinador municipal',s:20,c:C.su},{w:'Jorge Romero',s:16,c:C.ne},{w:'apertura',s:20,c:C.su},
+    {w:'trabajo territorial',s:24,c:C.su},{w:'Copacis',s:22,c:C.su},{w:'liderazgos vecinales',s:18,c:C.su},
+    {w:'encuesta interna',s:22,c:C.su},{w:'empate técnico',s:16,c:C.ne},{w:'competencia real',s:16,c:C.su},
+    {w:'aviadores',s:26,c:C.da},{w:'nepotismo',s:24,c:C.da},{w:'clan Parra',s:22,c:C.da},
+    {w:'cuadro reciclado',s:22,c:C.da},{w:'contradicción',s:16,c:C.da},{w:'anticorrupción',s:18,c:C.go},
+    {w:'Isaac Montoya',s:18,c:C.go},{w:'Morena',s:20,c:C.ne},{w:'alianza tácita',s:14,c:C.da},
+    {w:'civilidad',s:16,c:C.su},{w:'tejido social',s:18,c:C.su},{w:'base priista',s:16,c:C.go},
+    {w:'Corredor Azul',s:14,c:C.ne},{w:'transparencia',s:14,c:C.go},{w:'50 años de trayectoria',s:18,c:C.su}
+  ];
+  const max=Math.max(...words.map(x=>x.s)),min=Math.min(...words.map(x=>x.s));
+  document.getElementById('wordcloud').innerHTML=words.map(x=>{
+    const t=(x.s-min)/((max-min)||1);const size=(12+t*26).toFixed(0);const fw=t>0.6?800:t>0.3?700:500;
+    return `<span style="font-size:${size}px;color:${x.c};font-weight:${fw}" title="${x.w}">${x.w}</span>`;
+  }).join(' ');
+}
+
+function rCharts(t){
+  if(t==='sent')rSent('general');
+  if(t==='tom')rTom('general');
+  if(t==='hash'){buildCloud();rHash();}
+  if(t==='plat')rPlat();
+  if(t==='ter')rTer();
+}
+
+window.addEventListener('load',()=>setTimeout(()=>rCharts('sent'),100));
+</script>
+</body>
+</html>
